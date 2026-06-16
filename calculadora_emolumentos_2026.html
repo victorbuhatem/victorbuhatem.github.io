@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Emolumentos 2026 – TJMA</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #0d1117;
+    color: #c9d1d9;
+    min-height: 100vh;
+    padding: 28px 16px 48px;
+    line-height: 1.5;
+  }
+
+  .container { max-width: 740px; margin: 0 auto; }
+
+  /* ── HEADER ── */
+  .header { text-align: center; margin-bottom: 32px; }
+  .badge {
+    display: inline-block;
+    background: #162032;
+    color: #58a6ff;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+    border: 1px solid #1f4070;
+  }
+  .header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: #f0f6fc;
+    margin-bottom: 6px;
+  }
+  .header p { font-size: 13px; color: #6e7681; }
+
+  /* ── CARDS ── */
+  .card {
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 18px;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .field + .field { margin-top: 20px; }
+  .field-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #8b949e;
+    margin-bottom: 8px;
+  }
+
+  select {
+    width: 100%;
+    padding: 11px 14px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #c9d1d9;
+    font-size: 14px;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238b949e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  select:focus { border-color: #58a6ff; }
+  select option { background: #161b22; }
+  optgroup { color: #58a6ff; font-size: 12px; }
+
+  .valor-wrap { position: relative; }
+  .valor-prefix {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: 700;
+    color: #58a6ff;
+    pointer-events: none;
+  }
+  .valor-wrap input {
+    width: 100%;
+    padding: 11px 14px 11px 42px;
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    color: #f0f6fc;
+    font-size: 16px;
+    font-weight: 600;
+    outline: none;
+    transition: border-color .15s;
+    font-variant-numeric: tabular-nums;
+  }
+  .valor-wrap input:focus { border-color: #58a6ff; }
+  .valor-wrap input::placeholder { color: #484f58; font-weight: 400; }
+
+  .desc-box {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: #0d1117;
+    border-left: 3px solid #1f4070;
+    border-radius: 0 6px 6px 0;
+    font-size: 13px;
+    color: #8b949e;
+    display: none;
+    line-height: 1.6;
+  }
+  .desc-box.visible { display: block; }
+
+  /* ── RESULTS ── */
+  .result-section { display: none; }
+  .result-section.visible { display: block; }
+
+  .section-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #8b949e;
+    margin-bottom: 18px;
+  }
+
+  /* Line item */
+  .line-item {
+    padding-bottom: 18px;
+    margin-bottom: 18px;
+    border-bottom: 1px solid #21262d;
+  }
+  .line-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+  .line-header { margin-bottom: 10px; }
+  .line-code {
+    font-size: 11px;
+    color: #58a6ff;
+    font-family: 'Consolas', 'Courier New', monospace;
+    margin-bottom: 3px;
+  }
+  .line-label { font-size: 14px; color: #e6edf3; font-weight: 500; }
+
+  .breakdown-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .b-cell {
+    background: #0d1117;
+    border: 1px solid #21262d;
+    border-radius: 6px;
+    padding: 8px 10px;
+  }
+  .b-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #484f58;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .b-value {
+    font-size: 13px;
+    font-weight: 600;
+    color: #c9d1d9;
+    font-variant-numeric: tabular-nums;
+  }
+  .b-cell.total-cell { border-color: #1f4070; background: #111820; }
+  .b-cell.total-cell .b-label { color: #58a6ff; }
+  .b-cell.total-cell .b-value { color: #58a6ff; font-size: 14px; }
+
+  /* Grand total */
+  .grand-total-card {
+    background: linear-gradient(135deg, #111d2e 0%, #0d1829 100%);
+    border: 1px solid #1f4070;
+    border-radius: 12px;
+    padding: 22px 24px;
+    margin-top: 20px;
+  }
+  .gt-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #8b949e;
+    margin-bottom: 16px;
+  }
+  .gt-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #1a2535;
+    font-size: 13px;
+  }
+  .gt-row:last-child { border-bottom: none; }
+  .gt-row .k { color: #8b949e; }
+  .gt-row .v { color: #c9d1d9; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .gt-divider { border: none; border-top: 2px solid #1f4070; margin: 12px 0 14px; }
+  .gt-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .gt-total-label { font-size: 15px; font-weight: 700; color: #f0f6fc; }
+  .gt-total-value { font-size: 28px; font-weight: 800; color: #58a6ff; font-variant-numeric: tabular-nums; }
+
+  /* Info note */
+  .info-note {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #1a2010;
+    border: 1px solid #3a5015;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #79c830;
+    line-height: 1.5;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: #484f58;
+    margin-top: 32px;
+    line-height: 1.8;
+  }
+
+  @media (max-width: 480px) {
+    .breakdown-grid { grid-template-columns: repeat(2, 1fr); }
+    .gt-total-value { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="badge">TJMA · Resolução-GP nº 143/2025</div>
+    <h1>Calculadora de Emolumentos 2026</h1>
+    <p>Tabelas XIII, XIV, XV, XVI · Vigência: 01/01/2026</p>
+  </div>
+
+  <!-- INPUT CARD -->
+  <div class="card">
+    <div class="field">
+      <label class="field-label" for="actSelect">Ato cartorário</label>
+      <select id="actSelect" onchange="onActChange()">
+        <option value="">Selecione o ato desejado...</option>
+        <optgroup label="Tabelionato de Notas + Registro de Imóveis">
+          <option value="cv_full">Compra e Venda — Escritura + Registro</option>
+          <option value="doacao_full">Doação — Escritura + Registro</option>
+          <option value="doacao_usufruto">Doação com Reserva de Usufruto — Escritura + Registro</option>
+          <option value="inventario_full">Inventário / Partilha — Escritura + Registro</option>
+          <option value="divorcio_bens">Divórcio com Partilha de Imóvel — Escritura + Registro</option>
+        </optgroup>
+        <optgroup label="Apenas Tabelionato de Notas">
+          <option value="escritura_only">Escritura Pública (qualquer ato com valor)</option>
+          <option value="divorcio_sem_bens">Divórcio / Separação / União Estável sem bens</option>
+          <option value="ata_usucapiao">Ata Notarial para Usucapião Extrajudicial</option>
+          <option value="ata_simples">Ata Notarial simples</option>
+          <option value="procuracao">Procuração (geral / ad judicia)</option>
+          <option value="procuracao_causa_propria">Procuração em Causa Própria</option>
+        </optgroup>
+        <optgroup label="Apenas Registro de Imóveis">
+          <option value="registro_only">Registro de Transmissão (sem escritura)</option>
+          <option value="promessa_cv">Promessa de Compra e Venda (registro)</option>
+          <option value="usucapiao_ri">Usucapião Extrajudicial — RI completo</option>
+          <option value="averbacao_com_valor">Averbação com valor declarado</option>
+          <option value="averbacao_sem_valor">Averbação sem valor declarado</option>
+          <option value="matricula">Abertura de Matrícula</option>
+          <option value="prenotacao">Prenotação (isolada)</option>
+        </optgroup>
+      </select>
+      <div id="descBox" class="desc-box"></div>
+    </div>
+
+    <div id="valorGroup" class="field" style="display:none;">
+      <label class="field-label" for="valorInput">Valor venal / valor do ato (R$)</label>
+      <div class="valor-wrap">
+        <span class="valor-prefix">R$</span>
+        <input type="text" id="valorInput" placeholder="0,00"
+               oninput="onValorChange()" inputmode="decimal" autocomplete="off" />
+      </div>
+    </div>
+
+    <div id="folhasGroup" class="field" style="display:none;">
+      <label class="field-label" for="folhasInput">Número de folhas da ata</label>
+      <div class="valor-wrap">
+        <span class="valor-prefix" style="color:#8b949e">#</span>
+        <input type="number" id="folhasInput" placeholder="1" min="1"
+               oninput="onValorChange()" style="padding-left:36px;" />
+      </div>
+    </div>
+  </div>
+
+  <!-- RESULT SECTION -->
+  <div id="resultSection" class="result-section">
+    <div class="card">
+      <div class="section-title">Detalhamento por ato</div>
+      <div id="resultLines"></div>
+    </div>
+
+    <div class="grand-total-card">
+      <div class="gt-title">Totais consolidados</div>
+      <div id="gtRows"></div>
+      <hr class="gt-divider">
+      <div class="gt-total-row">
+        <span class="gt-total-label">Total a recolher</span>
+        <span class="gt-total-value" id="gtTotal">R$ 0,00</span>
+      </div>
+      <div id="infoNote"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    Resolução-GP nº 143, de 15 de dezembro de 2025 &middot; TJMA<br>
+    Inclui FERC (Lei nº 9.109/09), FADEP, FEMP (Lei nº 222/2020) e FERRFIS (LC nº 284/2025)<br>
+    <strong>Uso interno &mdash; não substitui consulta ao cartório</strong>
+  </div>
+
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  TABELAS DE EMOLUMENTOS
+// ════════════════════════════════════════════════════════════
+
+// Tabela XIII.1 — Escritura Pública com primeiro traslado (34 faixas)
+const T13_1 = [
+  { max:       7396.72, emol:   149.57, ferc:   4.49, fadep:   5.98, femp:   5.98, ferrfis:   1.50 },
+  { max:      11538.86, emol:   187.03, ferc:   5.61, fadep:   7.48, femp:   7.48, ferrfis:   1.87 },
+  { max:      14423.58, emol:   211.44, ferc:   6.34, fadep:   8.46, femp:   8.46, ferrfis:   2.11 },
+  { max:      18029.47, emol:   264.34, ferc:   7.93, fadep:  10.57, femp:  10.57, ferrfis:   2.64 },
+  { max:      22536.85, emol:   328.88, ferc:   9.87, fadep:  13.16, femp:  13.16, ferrfis:   3.29 },
+  { max:      28171.04, emol:   410.68, ferc:  12.32, fadep:  16.43, femp:  16.43, ferrfis:   4.11 },
+  { max:      35213.80, emol:   513.80, ferc:  15.41, fadep:  20.55, femp:  20.55, ferrfis:   5.14 },
+  { max:      44017.25, emol:   643.74, ferc:  19.31, fadep:  25.75, femp:  25.75, ferrfis:   6.44 },
+  { max:      55021.55, emol:   804.82, ferc:  24.14, fadep:  32.19, femp:  32.19, ferrfis:   8.05 },
+  { max:      68776.92, emol:  1004.34, ferc:  30.13, fadep:  40.17, femp:  40.17, ferrfis:  10.04 },
+  { max:      85971.18, emol:  1256.48, ferc:  37.69, fadep:  50.26, femp:  50.26, ferrfis:  12.56 },
+  { max:     107463.97, emol:  1571.33, ferc:  47.14, fadep:  62.85, femp:  62.85, ferrfis:  15.71 },
+  { max:     134329.95, emol:  1962.50, ferc:  58.88, fadep:  78.50, femp:  78.50, ferrfis:  19.63 },
+  { max:     167912.43, emol:  2455.27, ferc:  73.66, fadep:  98.21, femp:  98.21, ferrfis:  24.55 },
+  { max:     209890.56, emol:  3068.02, ferc:  92.04, fadep: 122.72, femp: 122.72, ferrfis:  30.68 },
+  { max:     262363.19, emol:  3833.82, ferc: 115.01, fadep: 153.35, femp: 153.35, ferrfis:  38.34 },
+  { max:     327953.98, emol:  4792.26, ferc: 143.77, fadep: 191.69, femp: 191.69, ferrfis:  47.92 },
+  { max:     409942.47, emol:  5991.36, ferc: 179.74, fadep: 239.65, femp: 239.65, ferrfis:  59.91 },
+  { max:     512428.12, emol:  7490.14, ferc: 224.70, fadep: 299.61, femp: 299.61, ferrfis:  74.90 },
+  { max:     640535.15, emol:  9361.59, ferc: 280.85, fadep: 374.46, femp: 374.46, ferrfis:  93.62 },
+  { max:     800668.95, emol: 11701.25, ferc: 351.04, fadep: 468.05, femp: 468.05, ferrfis: 117.01 },
+  { max:    1000836.20, emol: 14627.26, ferc: 438.82, fadep: 585.09, femp: 585.09, ferrfis: 146.27 },
+  { max:    1251045.24, emol: 15446.11, ferc: 463.38, fadep: 617.84, femp: 617.84, ferrfis: 154.46 },
+  { max:    1513764.74, emol: 15909.42, ferc: 477.28, fadep: 636.38, femp: 636.38, ferrfis: 159.09 },
+  { max:    1816517.70, emol: 16386.75, ferc: 491.60, fadep: 655.47, femp: 655.47, ferrfis: 163.87 },
+  { max:    2179821.24, emol: 16878.39, ferc: 506.35, fadep: 675.14, femp: 675.14, ferrfis: 168.78 },
+  { max:    2615785.49, emol: 17384.76, ferc: 521.54, fadep: 695.39, femp: 695.39, ferrfis: 173.85 },
+  { max:    3138942.61, emol: 17906.30, ferc: 537.19, fadep: 716.25, femp: 716.25, ferrfis: 179.06 },
+  { max:    3766731.13, emol: 18443.40, ferc: 553.30, fadep: 737.74, femp: 737.74, ferrfis: 184.43 },
+  { max:    4520077.34, emol: 18996.78, ferc: 569.90, fadep: 759.87, femp: 759.87, ferrfis: 189.97 },
+  { max:    5424092.81, emol: 19566.58, ferc: 587.00, fadep: 782.66, femp: 782.66, ferrfis: 195.67 },
+  { max:    6508911.38, emol: 20153.64, ferc: 604.61, fadep: 806.15, femp: 806.15, ferrfis: 201.54 },
+  { max:    7810693.63, emol: 20758.23, ferc: 622.75, fadep: 830.33, femp: 830.33, ferrfis: 207.58 },
+  { max:      Infinity, emol: 21380.93, ferc: 641.43, fadep: 855.24, femp: 855.24, ferrfis: 213.81 },
+];
+
+// Tabela XVI.3 — Registro de Imóveis com valor declarado (36 faixas)
+const T16_3 = [
+  { max:      5917.36, emol:    99.20, ferc:   2.98, fadep:   3.97, femp:   3.97, ferrfis:   0.99 },
+  { max:      7692.57, emol:   125.01, ferc:   3.75, fadep:   5.00, femp:   5.00, ferrfis:   1.25 },
+  { max:      9615.72, emol:   141.56, ferc:   4.25, fadep:   5.66, femp:   5.66, ferrfis:   1.42 },
+  { max:     12019.65, emol:   175.68, ferc:   5.27, fadep:   7.03, femp:   7.03, ferrfis:   1.76 },
+  { max:     15024.56, emol:   218.45, ferc:   6.55, fadep:   8.74, femp:   8.74, ferrfis:   2.18 },
+  { max:     18780.69, emol:   273.89, ferc:   8.22, fadep:  10.96, femp:  10.96, ferrfis:   2.74 },
+  { max:     23475.86, emol:   343.62, ferc:  10.31, fadep:  13.74, femp:  13.74, ferrfis:   3.44 },
+  { max:     29344.81, emol:   430.05, ferc:  12.90, fadep:  17.20, femp:  17.20, ferrfis:   4.30 },
+  { max:     36681.02, emol:   535.57, ferc:  16.07, fadep:  21.42, femp:  21.42, ferrfis:   5.36 },
+  { max:     45851.29, emol:   670.26, ferc:  20.11, fadep:  26.81, femp:  26.81, ferrfis:   6.70 },
+  { max:     57314.07, emol:   838.63, ferc:  25.16, fadep:  33.55, femp:  33.55, ferrfis:   8.39 },
+  { max:     71642.58, emol:  1047.40, ferc:  31.42, fadep:  41.90, femp:  41.90, ferrfis:  10.47 },
+  { max:     89553.26, emol:  1309.22, ferc:  39.28, fadep:  52.37, femp:  52.37, ferrfis:  13.09 },
+  { max:    111941.56, emol:  1636.01, ferc:  49.08, fadep:  65.44, femp:  65.44, ferrfis:  16.36 },
+  { max:    139926.94, emol:  2044.45, ferc:  61.33, fadep:  81.78, femp:  81.78, ferrfis:  20.44 },
+  { max:    174908.66, emol:  2556.02, ferc:  76.68, fadep: 102.24, femp: 102.24, ferrfis:  25.56 },
+  { max:    218635.83, emol:  3195.13, ferc:  95.85, fadep: 127.81, femp: 127.81, ferrfis:  31.95 },
+  { max:    273294.81, emol:  3994.89, ferc: 119.85, fadep: 159.80, femp: 159.80, ferrfis:  39.95 },
+  { max:    341618.50, emol:  4991.80, ferc: 149.75, fadep: 199.67, femp: 199.67, ferrfis:  49.92 },
+  { max:    427023.14, emol:  6240.83, ferc: 187.22, fadep: 249.63, femp: 249.63, ferrfis:  62.41 },
+  { max:    533778.91, emol:  7800.23, ferc: 234.01, fadep: 312.01, femp: 312.01, ferrfis:  78.00 },
+  { max:    667223.64, emol:  9750.39, ferc: 292.51, fadep: 390.02, femp: 390.02, ferrfis:  97.50 },
+  { max:    834029.56, emol: 12188.69, ferc: 365.66, fadep: 487.55, femp: 487.55, ferrfis: 121.89 },
+  { max:   1042536.94, emol: 14473.20, ferc: 434.20, fadep: 578.93, femp: 578.93, ferrfis: 144.73 },
+  { max:   1303171.21, emol: 15446.11, ferc: 463.38, fadep: 617.84, femp: 617.84, ferrfis: 154.46 },
+  { max:   1563805.44, emol: 15909.42, ferc: 477.28, fadep: 636.38, femp: 636.38, ferrfis: 159.09 },
+  { max:   1876566.51, emol: 16386.75, ferc: 491.60, fadep: 655.47, femp: 655.47, ferrfis: 163.87 },
+  { max:   2251879.82, emol: 16878.39, ferc: 506.35, fadep: 675.14, femp: 675.14, ferrfis: 168.78 },
+  { max:   2702255.82, emol: 17384.76, ferc: 521.54, fadep: 695.39, femp: 695.39, ferrfis: 173.85 },
+  { max:   3242706.98, emol: 17906.30, ferc: 537.19, fadep: 716.25, femp: 716.25, ferrfis: 179.06 },
+  { max:   3891248.37, emol: 18443.40, ferc: 553.30, fadep: 737.74, femp: 737.74, ferrfis: 184.43 },
+  { max:   4669498.05, emol: 18996.78, ferc: 569.90, fadep: 759.87, femp: 759.87, ferrfis: 189.97 },
+  { max:   5603397.67, emol: 19566.58, ferc: 587.00, fadep: 782.66, femp: 782.66, ferrfis: 195.67 },
+  { max:   6724077.19, emol: 20153.64, ferc: 604.61, fadep: 806.15, femp: 806.15, ferrfis: 201.54 },
+  { max:   8068892.63, emol: 20758.23, ferc: 622.75, fadep: 830.33, femp: 830.33, ferrfis: 207.58 },
+  { max:      Infinity, emol: 21380.93, ferc: 641.43, fadep: 855.24, femp: 855.24, ferrfis: 213.81 },
+];
+
+// Tabela XVI.9 — Registro Torrens / Averbação com valor (36 faixas)
+const T16_9 = [
+  { max:      5917.36, emol:    49.82, ferc:   1.49, fadep:   1.99, femp:   1.99, ferrfis:   0.50 },
+  { max:      7692.57, emol:    62.15, ferc:   1.86, fadep:   2.49, femp:   2.49, ferrfis:   0.62 },
+  { max:      9615.72, emol:    70.72, ferc:   2.12, fadep:   2.83, femp:   2.83, ferrfis:   0.71 },
+  { max:     12019.65, emol:    87.42, ferc:   2.62, fadep:   3.50, femp:   3.50, ferrfis:   0.87 },
+  { max:     15024.56, emol:   109.29, ferc:   3.28, fadep:   4.37, femp:   4.37, ferrfis:   1.09 },
+  { max:     18780.69, emol:   136.66, ferc:   4.10, fadep:   5.47, femp:   5.47, ferrfis:   1.37 },
+  { max:     23475.86, emol:   171.74, ferc:   5.15, fadep:   6.87, femp:   6.87, ferrfis:   1.72 },
+  { max:     29344.81, emol:   215.10, ferc:   6.45, fadep:   8.60, femp:   8.60, ferrfis:   2.15 },
+  { max:     36681.02, emol:   268.00, ferc:   8.04, fadep:  10.72, femp:  10.72, ferrfis:   2.68 },
+  { max:     45851.29, emol:   334.92, ferc:  10.05, fadep:  13.40, femp:  13.40, ferrfis:   3.35 },
+  { max:     57314.07, emol:   419.24, ferc:  12.58, fadep:  16.77, femp:  16.77, ferrfis:   4.19 },
+  { max:     71642.58, emol:   523.92, ferc:  15.72, fadep:  20.96, femp:  20.96, ferrfis:   5.24 },
+  { max:     89553.26, emol:   654.68, ferc:  19.64, fadep:  26.19, femp:  26.19, ferrfis:   6.55 },
+  { max:    111941.56, emol:   817.87, ferc:  24.54, fadep:  32.71, femp:  32.71, ferrfis:   8.18 },
+  { max:    139926.94, emol:  1022.15, ferc:  30.66, fadep:  40.89, femp:  40.89, ferrfis:  10.22 },
+  { max:    174908.66, emol:  1278.21, ferc:  38.35, fadep:  51.13, femp:  51.13, ferrfis:  12.78 },
+  { max:    218635.83, emol:  1597.42, ferc:  47.92, fadep:  63.90, femp:  63.90, ferrfis:  15.97 },
+  { max:    273294.81, emol:  1997.45, ferc:  59.92, fadep:  79.90, femp:  79.90, ferrfis:  19.97 },
+  { max:    341618.50, emol:  2495.98, ferc:  74.88, fadep:  99.84, femp:  99.84, ferrfis:  24.96 },
+  { max:    427023.14, emol:  3120.49, ferc:  93.61, fadep: 124.82, femp: 124.82, ferrfis:  31.20 },
+  { max:    533778.91, emol:  3899.77, ferc: 116.99, fadep: 155.99, femp: 155.99, ferrfis:  39.00 },
+  { max:    667223.64, emol:  4875.33, ferc: 146.26, fadep: 195.01, femp: 195.01, ferrfis:  48.75 },
+  { max:    834029.56, emol:  6094.63, ferc: 182.84, fadep: 243.79, femp: 243.79, ferrfis:  60.95 },
+  { max:   1042536.94, emol:  7369.77, ferc: 221.09, fadep: 294.79, femp: 294.79, ferrfis:  73.70 },
+  { max:   1303171.21, emol:  7725.59, ferc: 231.77, fadep: 309.02, femp: 309.02, ferrfis:  77.26 },
+  { max:   1563805.44, emol:  7957.52, ferc: 238.73, fadep: 318.30, femp: 318.30, ferrfis:  79.58 },
+  { max:   1876566.51, emol:  8196.32, ferc: 245.89, fadep: 327.85, femp: 327.85, ferrfis:  81.96 },
+  { max:   2251879.82, emol:  8442.15, ferc: 253.26, fadep: 337.69, femp: 337.69, ferrfis:  84.42 },
+  { max:   2702255.82, emol:  8695.40, ferc: 260.86, fadep: 347.82, femp: 347.82, ferrfis:  86.95 },
+  { max:   3242706.98, emol:  8956.24, ferc: 268.69, fadep: 358.25, femp: 358.25, ferrfis:  89.56 },
+  { max:   3891248.37, emol:  9224.79, ferc: 276.74, fadep: 368.99, femp: 368.99, ferrfis:  92.25 },
+  { max:   4669498.05, emol:  9501.76, ferc: 285.05, fadep: 380.07, femp: 380.07, ferrfis:  95.02 },
+  { max:   5603397.67, emol:  9786.73, ferc: 293.60, fadep: 391.47, femp: 391.47, ferrfis:  97.87 },
+  { max:   6724077.19, emol: 10080.25, ferc: 302.41, fadep: 403.21, femp: 403.21, ferrfis: 100.80 },
+  { max:   8068892.63, emol: 10382.62, ferc: 311.48, fadep: 415.30, femp: 415.30, ferrfis: 103.83 },
+  { max:     Infinity, emol: 10694.25, ferc: 320.83, fadep: 427.77, femp: 427.77, ferrfis: 106.94 },
+];
+
+// Valores fixos
+const FIXED = {
+  PRENOTACAO:       { emol:  38.72, ferc:  1.16, fadep:  1.55, femp:  1.55, ferrfis:  0.39 }, // 16.1
+  MATRICULA:        { emol:  91.20, ferc:  2.74, fadep:  3.65, femp:  3.65, ferrfis:  0.91 }, // 16.2
+  AVERB_SEM_VALOR:  { emol: 120.03, ferc:  3.60, fadep:  4.80, femp:  4.80, ferrfis:  1.20 }, // 16.22.2
+  DIVORC_SEM_BENS:  { emol: 149.57, ferc:  4.49, fadep:  5.98, femp:  5.98, ferrfis:  1.50 }, // 13.7
+  PROCURACAO:       { emol: 125.01, ferc:  3.75, fadep:  5.00, femp:  5.00, ferrfis:  1.25 }, // 13.9.3
+  ATA_1F:           { emol: 240.63, ferc:  7.22, fadep:  9.63, femp:  9.63, ferrfis:  2.41 }, // 13.14.1
+  ATA_XF:           { emol: 119.96, ferc:  3.60, fadep:  4.80, femp:  4.80, ferrfis:  1.20 }, // 13.14.2
+};
+
+// ════════════════════════════════════════════════════════════
+//  DESCRIÇÕES DOS ATOS
+// ════════════════════════════════════════════════════════════
+const DESCS = {
+  cv_full:           'Escritura Pública (item 13.1) + Prenotação (item 16.1) + Registro de Transmissão (item 16.3). Base: valor venal ou valor declarado — o maior (itens 13.5 e 16.27).',
+  doacao_full:       'Escritura Pública de Doação (item 13.1) + Prenotação (item 16.1) + Registro de Doação (item 16.3).',
+  doacao_usufruto:   'Dois atos na escritura: doação = 2/3 do valor (item 13.25 "a"); reserva de usufruto = 1/3 do valor (item 13.25 "b"). No RI: registro da transmissão + registro do usufruto com base em 1/3 do valor (item 16.37).',
+  inventario_full:   'Escritura de Inventário/Partilha (item 13.8 → tabela 13.1) + Prenotação (16.1) + Registro (16.3). Base: valor dos bens partilhados.',
+  divorcio_bens:     'Escritura de Divórcio/Separação com partilha de bem imóvel (item 13.8 → tabela 13.1) + Prenotação (16.1) + Registro (16.3).',
+  escritura_only:    'Apenas Escritura Pública (item 13.1) sem registro. Aplicável a qualquer ato de valor: compra e venda, doação, permuta, inventário etc.',
+  divorcio_sem_bens: 'Escritura de Separação, Divórcio Consensual ou Extinção de União Estável sem bens a partilhar (item 13.7). Valor fixo, independe de valor venal.',
+  ata_usucapiao:     'Ata Notarial para fins de Usucapião Extrajudicial (item 13.14.3). Emolumentos idênticos ao item 13.1, com base no valor do imóvel.',
+  ata_simples:       'Ata Notarial comum: 1ª folha (item 13.14.1) + folhas excedentes (item 13.14.2 × nº adicional). Informe o total de folhas.',
+  procuracao:        'Procuração geral, ad judicia ou et extra (item 13.9.3). Valor fixo.',
+  procuracao_causa_propria: 'Procuração em causa própria / mandato (item 13.9.1). Emolumentos = 50% do item 13.1, calculados sobre o valor do bem/negócio.',
+  registro_only:     'Apenas Prenotação (16.1) + Registro (16.3), sem escritura. Ex.: contrato particular de financiamento.',
+  promessa_cv:       'Registro de Promessa de Compra e Venda (item 16.3.37). Emolumentos do registro = 50% da tabela 16.3.',
+  usucapiao_ri:      'Usucapião Extrajudicial — RI completo (item 16.36): Prenotação (16.1) + processamento (50% de 16.3) + aquisição se deferida (50% de 16.3) + abertura de matrícula (16.2).',
+  averbacao_com_valor: 'Averbação com valor declarado (item 16.22.1 → tabela 16.9). A tabela 16.9 corresponde a aproximadamente 50% dos valores do registro.',
+  averbacao_sem_valor: 'Averbação de qualquer natureza sem valor declarado no RI (item 16.22.2). Valor fixo.',
+  matricula:         'Abertura de Matrícula no Registro Geral de Imóveis (item 16.2). Valor fixo.',
+  prenotacao:        'Prenotação (item 16.1). Valor fixo, cobrado em qualquer apresentação de título ao RI.',
+};
+
+const NEEDS_VALOR = {
+  cv_full:1, doacao_full:1, doacao_usufruto:1, inventario_full:1, divorcio_bens:1,
+  escritura_only:1, ata_usucapiao:1, procuracao_causa_propria:1,
+  registro_only:1, promessa_cv:1, usucapiao_ri:1, averbacao_com_valor:1,
+};
+const NEEDS_FOLHAS = { ata_simples: 1 };
+
+// ════════════════════════════════════════════════════════════
+//  HELPERS
+// ════════════════════════════════════════════════════════════
+function lookup(table, valor) {
+  for (const r of table) if (valor <= r.max) return { ...r };
+  return { ...table[table.length - 1] };
+}
+
+function scale(row, f) {
+  return {
+    emol: row.emol * f, ferc: row.ferc * f, fadep: row.fadep * f,
+    femp: row.femp * f, ferrfis: row.ferrfis * f,
+  };
+}
+
+function rowTotal(r) { return r.emol + r.ferc + r.fadep + r.femp + r.ferrfis; }
+
+function sumRows(...rows) {
+  return rows.reduce((a, r) => ({
+    emol:    a.emol    + r.emol,
+    ferc:    a.ferc    + r.ferc,
+    fadep:   a.fadep   + r.fadep,
+    femp:    a.femp    + r.femp,
+    ferrfis: a.ferrfis + r.ferrfis,
+  }), { emol:0, ferc:0, fadep:0, femp:0, ferrfis:0 });
+}
+
+function brl(n) {
+  return 'R$ ' + n.toFixed(2).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+function parseInput(s) {
+  if (!s) return 0;
+  return parseFloat(s.replace(/[R$\s.]/g,'').replace(',','.')) || 0;
+}
+
+// ════════════════════════════════════════════════════════════
+//  LÓGICA DE CÁLCULO
+// ════════════════════════════════════════════════════════════
+function buildLines(act, valor, folhas) {
+  // Each line: { code, label, note?, emol, ferc, fadep, femp, ferrfis }
+  const lines = [];
+  const add = (code, label, row, note) => lines.push({ code, label, note: note||'', ...row });
+
+  switch (act) {
+
+    case 'cv_full':
+      add('Item 13.1',   'Escritura Pública de Compra e Venda', lookup(T13_1, valor));
+      add('Item 16.1',   'Prenotação',                          FIXED.PRENOTACAO);
+      add('Item 16.3',   'Registro de Transmissão',             lookup(T16_3, valor));
+      break;
+
+    case 'doacao_full':
+      add('Item 13.1',   'Escritura Pública de Doação',         lookup(T13_1, valor));
+      add('Item 16.1',   'Prenotação',                          FIXED.PRENOTACAO);
+      add('Item 16.3',   'Registro de Doação',                  lookup(T16_3, valor));
+      break;
+
+    case 'doacao_usufruto': {
+      const v_doac = valor * (2/3);
+      const v_usuf = valor * (1/3);
+      add('Item 13.1 (2/3)', `Escritura — Doação (base: ${brl(v_doac)})`,          lookup(T13_1, v_doac), 'Item 13.25 "a"');
+      add('Item 13.1 (1/3)', `Escritura — Reserva de Usufruto (base: ${brl(v_usuf)})`, lookup(T13_1, v_usuf), 'Item 13.25 "b"');
+      add('Item 16.1',       'Prenotação',                                           FIXED.PRENOTACAO);
+      add('Item 16.3',       'Registro de Doação (valor integral)',                  lookup(T16_3, valor));
+      add('Item 16.3 (1/3)', `Registro de Usufruto (base: ${brl(v_usuf)})`,         lookup(T16_3, v_usuf), 'Item 16.37');
+      break;
+    }
+
+    case 'inventario_full':
+      add('Item 13.8 → 13.1', 'Escritura de Inventário / Partilha', lookup(T13_1, valor));
+      add('Item 16.1',         'Prenotação',                          FIXED.PRENOTACAO);
+      add('Item 16.3',         'Registro de Partilha',                lookup(T16_3, valor));
+      break;
+
+    case 'divorcio_bens':
+      add('Item 13.8 → 13.1', 'Escritura de Divórcio com Partilha', lookup(T13_1, valor));
+      add('Item 16.1',         'Prenotação',                          FIXED.PRENOTACAO);
+      add('Item 16.3',         'Registro de Transmissão',             lookup(T16_3, valor));
+      break;
+
+    case 'escritura_only':
+      add('Item 13.1', 'Escritura Pública', lookup(T13_1, valor));
+      break;
+
+    case 'divorcio_sem_bens':
+      add('Item 13.7', 'Escritura de Divórcio / Separação (sem bens)', FIXED.DIVORC_SEM_BENS);
+      break;
+
+    case 'ata_usucapiao':
+      add('Item 13.14.3 → 13.1', 'Ata Notarial — Usucapião Extrajudicial', lookup(T13_1, valor));
+      break;
+
+    case 'ata_simples': {
+      add('Item 13.14.1', 'Ata Notarial — 1ª folha', FIXED.ATA_1F);
+      if (folhas > 1) {
+        const extra = {
+          emol: FIXED.ATA_XF.emol * (folhas-1),
+          ferc: FIXED.ATA_XF.ferc * (folhas-1),
+          fadep: FIXED.ATA_XF.fadep * (folhas-1),
+          femp: FIXED.ATA_XF.femp * (folhas-1),
+          ferrfis: FIXED.ATA_XF.ferrfis * (folhas-1),
+        };
+        add('Item 13.14.2', `Ata Notarial — ${folhas-1} folha(s) excedente(s)`, extra);
+      }
+      break;
+    }
+
+    case 'procuracao':
+      add('Item 13.9.3', 'Procuração (geral / ad judicia)', FIXED.PROCURACAO);
+      break;
+
+    case 'procuracao_causa_propria':
+      add('Item 13.9.1 (50% de 13.1)', 'Procuração em Causa Própria', scale(lookup(T13_1, valor), 0.5));
+      break;
+
+    case 'registro_only':
+      add('Item 16.1', 'Prenotação',   FIXED.PRENOTACAO);
+      add('Item 16.3', 'Registro',     lookup(T16_3, valor));
+      break;
+
+    case 'promessa_cv':
+      add('Item 16.1',             'Prenotação',                              FIXED.PRENOTACAO);
+      add('Item 16.3.37 (50% 16.3)', 'Registro de Promessa de C&V',         scale(lookup(T16_3, valor), 0.5));
+      break;
+
+    case 'usucapiao_ri': {
+      const r16 = lookup(T16_3, valor);
+      add('Item 16.1',              'Prenotação',                                   FIXED.PRENOTACAO);
+      add('Item 16.36 — proc.',     'Processamento do Pedido (50% do registro)',    scale(r16, 0.5));
+      add('Item 16.36 — aquis.',    'Aquisição da Propriedade, se deferida (50%)',  scale(r16, 0.5));
+      add('Item 16.2',              'Abertura de Matrícula (se deferida)',           FIXED.MATRICULA);
+      break;
+    }
+
+    case 'averbacao_com_valor':
+      add('Item 16.1',             'Prenotação',                    FIXED.PRENOTACAO);
+      add('Item 16.22.1 → 16.9',  'Averbação com valor declarado', lookup(T16_9, valor));
+      break;
+
+    case 'averbacao_sem_valor':
+      add('Item 16.22.2', 'Averbação sem valor declarado', FIXED.AVERB_SEM_VALOR);
+      break;
+
+    case 'matricula':
+      add('Item 16.2', 'Abertura de Matrícula', FIXED.MATRICULA);
+      break;
+
+    case 'prenotacao':
+      add('Item 16.1', 'Prenotação', FIXED.PRENOTACAO);
+      break;
+  }
+  return lines;
+}
+
+// ════════════════════════════════════════════════════════════
+//  RENDER
+// ════════════════════════════════════════════════════════════
+function renderLines(lines) {
+  return lines.map(l => {
+    const t = rowTotal(l);
+    return `
+      <div class="line-item">
+        <div class="line-header">
+          <div class="line-code">${l.code}${l.note ? ' <span style="color:#484f58">· '+l.note+'</span>' : ''}</div>
+          <div class="line-label">${l.label}</div>
+        </div>
+        <div class="breakdown-grid">
+          <div class="b-cell"><div class="b-label">Emolumentos</div><div class="b-value">${brl(l.emol)}</div></div>
+          <div class="b-cell"><div class="b-label">FERC</div><div class="b-value">${brl(l.ferc)}</div></div>
+          <div class="b-cell"><div class="b-label">FADEP</div><div class="b-value">${brl(l.fadep)}</div></div>
+          <div class="b-cell"><div class="b-label">FEMP</div><div class="b-value">${brl(l.femp)}</div></div>
+          <div class="b-cell"><div class="b-label">FERRFIS</div><div class="b-value">${brl(l.ferrfis)}</div></div>
+          <div class="b-cell total-cell"><div class="b-label">Subtotal</div><div class="b-value">${brl(t)}</div></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderGrandTotal(lines) {
+  const tot = sumRows(...lines);
+  const grand = rowTotal(tot);
+
+  document.getElementById('gtRows').innerHTML = `
+    <div class="gt-row"><span class="k">Emolumentos</span><span class="v">${brl(tot.emol)}</span></div>
+    <div class="gt-row"><span class="k">FERC</span><span class="v">${brl(tot.ferc)}</span></div>
+    <div class="gt-row"><span class="k">FADEP</span><span class="v">${brl(tot.fadep)}</span></div>
+    <div class="gt-row"><span class="k">FEMP</span><span class="v">${brl(tot.femp)}</span></div>
+    <div class="gt-row"><span class="k">FERRFIS</span><span class="v">${brl(tot.ferrfis)}</span></div>
+  `;
+  document.getElementById('gtTotal').textContent = brl(grand);
+
+  // Teto de emolumentos
+  const note = document.getElementById('infoNote');
+  if (tot.emol >= 21380) {
+    note.innerHTML = `<div class="info-note">⚑ Teto máximo de emolumentos atingido (R$ 21.380,93 — art. 37, Lei nº 9.109/2009).</div>`;
+  } else {
+    note.innerHTML = '';
+  }
+}
+
+// ════════════════════════════════════════════════════════════
+//  EVENT HANDLERS
+// ════════════════════════════════════════════════════════════
+function onActChange() {
+  const act = document.getElementById('actSelect').value;
+  const descBox     = document.getElementById('descBox');
+  const valorGroup  = document.getElementById('valorGroup');
+  const folhasGroup = document.getElementById('folhasGroup');
+  const resultSec   = document.getElementById('resultSection');
+
+  descBox.textContent = DESCS[act] || '';
+  descBox.className = act ? 'desc-box visible' : 'desc-box';
+
+  valorGroup.style.display  = NEEDS_VALOR[act]  ? 'block' : 'none';
+  folhasGroup.style.display = NEEDS_FOLHAS[act] ? 'block' : 'none';
+
+  if (!act) { resultSec.classList.remove('visible'); return; }
+
+  // Fixed-value acts: calculate immediately
+  if (!NEEDS_VALOR[act] && !NEEDS_FOLHAS[act]) {
+    calculate(act, 0, 1);
+  } else if (NEEDS_FOLHAS[act]) {
+    calculate(act, 0, 1);
+  } else {
+    resultSec.classList.remove('visible');
+  }
+}
+
+function onValorChange() {
+  const act = document.getElementById('actSelect').value;
+  if (act) calculate(act, null, null);
+}
+
+function calculate(act, forceValor, forceFolhas) {
+  const valor  = forceValor  !== null ? forceValor  : parseInput(document.getElementById('valorInput').value);
+  const folhas = forceFolhas !== null ? forceFolhas : (parseInt(document.getElementById('folhasInput').value) || 1);
+
+  if (NEEDS_VALOR[act] && valor <= 0) {
+    document.getElementById('resultSection').classList.remove('visible');
+    return;
+  }
+
+  const lines = buildLines(act, valor, Math.max(1, folhas));
+  if (!lines.length) return;
+
+  document.getElementById('resultLines').innerHTML = renderLines(lines);
+  renderGrandTotal(lines);
+  document.getElementById('resultSection').classList.add('visible');
+}
+</script>
+</body>
+</html>
